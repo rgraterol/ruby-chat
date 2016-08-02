@@ -9,6 +9,7 @@ module ChatDemo
     KEEPALIVE_TIME = 15 # in seconds
     CHANNEL        = "chat-demo"
 
+
     def initialize(app)
       @app     = app
       @clients = []
@@ -18,7 +19,10 @@ module ChatDemo
         redis_sub = Redis.new(host: uri.host, port: uri.port, password: uri.password)
         redis_sub.subscribe(CHANNEL) do |on|
           on.message do |channel, msg|
+            p msg
             @clients.each {|ws| ws.send(msg) }
+            puts "CLIENTS"
+            puts @clients.inspect
           end
         end
       end
@@ -29,6 +33,7 @@ module ChatDemo
         ws = Faye::WebSocket.new(env, nil, {ping: KEEPALIVE_TIME })
         ws.on :open do |event|
           p [:open, ws.object_id]
+          puts ws.url
           @clients << ws
         end
 
